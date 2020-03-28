@@ -98,3 +98,106 @@ rHS <- function(n, mu =0, sigma =1){
   r <- rshsI(n, mu=mu, sigma=sigma, nu=1)
   r
 }
+#exaple
+library(assist)
+data(acid)
+x1 <- acid$x1
+x2 <- acid$x2
+x3 <- acid$t1
+y  <- acid$ph
+dat1 <- data.frame(y, x1, x2, x3)
+############ MODEL 4
+h0 <- gamlss(y ~ ps(x1) + ps(x3), data=dat1, method = CG(), family = NO, 
+             sigma.formula = ~ ps(x1) + (x3), n.cyc = 200, cyc = 200 , bf.cyc = 200)
+h1 <- gamlss(y ~ ps(x1) + ps(x3), data=dat1, method = RS(), family = HS, 
+             sigma.formula = ~ ps(x1) + x3, n.cyc = 20, cyc = 200 , bf.cyc = 200)
+h2 <- gamlss(y ~ ps(x1) + ps(x3), data=dat1, method = RS(), family = TF(), 
+             sigma.formula = ~ ps(x1) + x3, n.cyc = 20, cyc = 200 , bf.cyc = 200)
+VC.test(obj1=h0, obj2=h1, sig.lev = 0.05)
+par(mfrow=c(3, 2), mar=c(4, 4, 1.5 ,1.5), oma=c(.1,.1,.1,.1))
+rr0 <- residuals(object=h0, what = "z-scores")
+qqnorm(rr0, pch=20, col = "red", main = "")
+qqline(rr0, col = "blue", lwd = 2)
+wp(h0, ylim.all = 1.5, xlab = "", ylab = "", main = "")
+#
+rr1 <- residuals(object=h1, what = "z-scores")
+qqnorm(rr1, pch=20, col = "red", main = "")
+qqline(rr1, col = "blue", lwd = 2)
+wp(h1, ylim.all = 1.5, xlab = "", ylab = "", main = "")
+rr2 <- residuals(object=h2, what = "z-scores")
+qqnorm(rr2, pch=20, col = "red", main = "")
+qqline(rr2, col = "blue", lwd = 2)
+wp(h2, ylim.all = 1.5, xlab = "", ylab = "", main = "")
+dev.print(tiff, "qqworm4.tiff", res=1000, height=7.5, width=5, units="in")
+#############
+par(mfrow=c(2, 2), mar=c(4, 4, 1.5 ,1.5), oma=c(.1,.1,.1,.1))
+term.plot(h0, what = "mu", partial.resid = F, pch=20, col.term ="blue", term = "ps(x1)",
+          col.res = "red", xlabs = c(expression(paste(h[1] , (x[1])))), ylabs = "", main = "")
+term.plot(h0, what = "mu", partial.resid = F, pch=20, col.term ="blue", term = "ps(x3)",
+          col.res = "red", xlabs = c(expression(paste(h[2] , (x[3])))), ylabs = "", main = "")
+term.plot(h0, what = "sigma", partial.resid = F, pch=20, col.term ="blue", term = "ps(x1)",
+          col.res = "red", xlabs = c(expression(paste(h[3] , (x[1])))), ylabs = "", main = "")
+term.plot(h0, what = "sigma", partial.resid = F, pch=20, col.term ="blue", term = "x3",
+          col.res = "red", xlabs = c(expression(paste(x[3]))), ylabs = "", main = "")
+dev.print(tiff, "termno4.tiff", res=1000, height=5, width=5, units="in")
+#################
+par(mfrow=c(2, 2), mar=c(4, 4, 1.5 ,1.5), oma=c(.1,.1,.1,.1))
+term.plot(h1, what = "mu", partial.resid = F, pch=20, col.term ="blue", term = "ps(x1)",
+          col.res = "red", xlabs = c(expression(paste(h[1] , (x[1])))), ylabs = "", main = "")
+term.plot(h1, what = "mu", partial.resid = F, pch=20, col.term ="blue", term = "ps(x3)",
+          col.res = "red", xlabs = c(expression(paste(h[2] , (x[3])))), ylabs = "", main = "")
+term.plot(h1, what = "sigma", partial.resid = F, pch=20, col.term ="blue", term = "ps(x1)",
+          col.res = "red", xlabs = c(expression(paste(h[3] , (x[1])))), ylabs = "", main = "")
+term.plot(h1, what = "sigma", partial.resid = F, pch=20, col.term ="blue", term = "x3",
+          col.res = "red", xlabs = c(expression(paste(x[3]))), ylabs = "", main = "")
+dev.print(tiff, "termhs4.tiff", res=1000, height=5, width=5, units="in")
+#################
+par(mfrow=c(2, 2), mar=c(4, 4, 1.5 ,1.5), oma=c(.1,.1,.1,.1))
+term.plot(h2, what = "mu", partial.resid = F, pch=20, col.term ="blue", term = "ps(x1)",
+          col.res = "red", xlabs = c(expression(paste(h[1] , (x[1])))), ylabs = "", main = "")
+term.plot(h2, what = "mu", partial.resid = F, pch=20, col.term ="blue", term = "ps(x3)",
+          col.res = "red", xlabs = c(expression(paste(h[2] , (x[3])))), ylabs = "", main = "")
+term.plot(h2, what = "sigma", partial.resid = F, pch=20, col.term ="blue", term = "ps(x1)",
+          col.res = "red", xlabs = c(expression(paste(h[3] , (x[1])))), ylabs = "", main = "")
+term.plot(h2, what = "sigma", partial.resid = F, pch=20, col.term ="blue", term = "x3",
+          col.res = "red", xlabs = c(expression(paste(x[3]))), ylabs = "", main = "")
+dev.print(tiff, "termt4.tiff", res=1000, height=5, width=5, units="in")
+#############################
+############ MODEL 3
+h0 <- gamlss(y ~ ps(x1) + ps(x3), data=dat1, method = CG(), family = NO, 
+             sigma.formula = ~ 1, n.cyc = 200, cyc = 200 , bf.cyc = 200)
+h1 <- gamlss(y ~ ps(x1) + ps(x3), data=dat1, method = RS(), family = HS, 
+             sigma.formula = ~ 1, n.cyc = 600, cyc = 200 , bf.cyc = 200)
+h2 <- gamlss(y ~ ps(x1) + ps(x3), data=dat1, method = RS(), family = TF(), 
+             sigma.formula = ~ 1, n.cyc = 600, cyc = 200 , bf.cyc = 200)
+VC.test(obj1=h0, obj2=h1, sig.lev = 0.05)
+par(mfrow=c(3, 2), mar=c(4, 4, 1.5 ,1.5), oma=c(.1,.1,.1,.1))
+rr0 <- residuals(object=h0, what = "z-scores")
+qqnorm(rr0, pch=20, col = "red", main = "")
+qqline(rr0, col = "blue", lwd = 2)
+wp(h0, ylim.all = 1.5, xlab = "", ylab = "", main = "")
+#
+rr1 <- residuals(object=h1, what = "z-scores")
+qqnorm(rr1, pch=20, col = "red", main = "")
+qqline(rr1, col = "blue", lwd = 2)
+wp(h1, ylim.all = 1.5, xlab = "", ylab = "", main = "")
+rr2 <- residuals(object=h2, what = "z-scores")
+qqnorm(rr2, pch=20, col = "red", main = "")
+qqline(rr2, col = "blue", lwd = 2)
+wp(h2, ylim.all = 1.5, xlab = "", ylab = "", main = "")
+dev.print(tiff, "qqworm3.tiff", res=1000, height=7.5, width=5, units="in")
+#############
+par(mfrow=c(3, 2), mar=c(4, 4, 1.5 ,1.5), oma=c(.1,.1,.1,.1))
+term.plot(h0, what = "mu", partial.resid = F, pch=20, col.term ="blue", term = "ps(x1)",
+          col.res = "red", xlabs = c(expression(paste(h[1] , (x[1])))), ylabs = "", main = "")
+term.plot(h0, what = "mu", partial.resid = F, pch=20, col.term ="blue", term = "ps(x3)",
+          col.res = "red", xlabs = c(expression(paste(h[2] , (x[3])))), ylabs = "", main = "")
+term.plot(h1, what = "mu", partial.resid = F, pch=20, col.term ="blue", term = "ps(x1)",
+          col.res = "red", xlabs = c(expression(paste(h[1] , (x[1])))), ylabs = "", main = "")
+term.plot(h1, what = "mu", partial.resid = F, pch=20, col.term ="blue", term = "ps(x3)",
+          col.res = "red", xlabs = c(expression(paste(h[2] , (x[3])))), ylabs = "", main = "")
+term.plot(h2, what = "mu", partial.resid = F, pch=20, col.term ="blue", term = "ps(x1)",
+          col.res = "red", xlabs = c(expression(paste(h[1] , (x[1])))), ylabs = "", main = "")
+term.plot(h2, what = "mu", partial.resid = F, pch=20, col.term ="blue", term = "ps(x3)",
+          col.res = "red", xlabs = c(expression(paste(h[2] , (x[3])))), ylabs = "", main = "")
+dev.print(tiff, "term3.tiff", res=1000, height=7.5, width=5, units="in")
