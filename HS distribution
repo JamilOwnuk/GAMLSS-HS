@@ -1,0 +1,100 @@
+HS <- HS <-function (mu.link ="identity", sigma.link="log") {
+  # definition of the link function options
+  mstats <- checklink( "mu.link", "SHSI", substitute(mu.link),
+                       c("inverse", "log", "identity", "own"))
+  dstats <- checklink("sigma.link", "SHSI", substitute(sigma.link),
+                      c("inverse", "log", "identity", "own"))
+  # fitting information
+  structure(
+    list(family = c("HS", "HS"),
+         parameters = list(mu=TRUE,sigma=TRUE),
+         nopar = 2,
+         type = "Continuous",
+         mu.link = as.character(substitute(mu.link)),
+         sigma.link = as.character(substitute(sigma.link)),
+         
+         mu.linkfun = mstats$linkfun,
+         sigma.linkfun = dstats$linkfun,
+         
+         mu.linkinv = mstats$linkinv,
+         sigma.linkinv = dstats$linkinv,
+         
+         mu.dr = mstats$mu.eta,
+         sigma.dr = dstats$mu.eta,
+         
+         
+         dldm = function(y,mu,sigma){
+           u = exp(2*(y-mu)/sigma)
+           dldm = 1/sigma * (2*(u/(1+u)) - 1)
+           dldm
+         },
+         d2ldm2 = function(y,mu,sigma){
+           u = exp(2*(y-mu)/sigma)
+           dldm = 1/sigma * (2*(u/(1+u)) - 1)
+           d2ldm2 = -dldm * dldm
+           d2ldm2 },
+         
+         dldd = function(y,mu,sigma){
+           u = exp(2*(y-mu)/sigma)
+           z = (y-mu)/sigma
+           dldd = 2/sigma * z * u/(1+u) -z/sigma -1/sigma
+           dldd
+         }, 
+         d2ldd2 = function(y,mu,sigma){
+           u = exp(2*(y-mu)/sigma)
+           z = (y-mu)/sigma
+           dldd = 2/sigma * z * u/(1+u) -z/sigma -1/sigma
+           d2ldd2 = -dldd * dldd
+           d2ldd2 },
+         
+         
+         d2ldmdd = function(y,mu,sigma){
+           u = exp(2*(y-mu)/sigma)
+           dldm = 1/sigma * (2*(u/(1+u)) - 1)
+           u = exp((y-mu)/sigma)
+           z = (y-mu)/sigma
+           dldd = 2/sigma * z * u/(1+u) -z/sigma -1/sigma           
+           d2ldmdd = -dldm * dldd
+           d2ldmdd },
+         
+         
+         G.dev.incr  = function(y,mu,sigma,...) -2*dHS(y, mu = mu, sigma = sigma,log = TRUE), 
+         rqres = expression(
+           rqres(pfun="pHS", type="Continuous", y=y, mu=mu, sigma=sigma)
+         ), 
+         
+         mu.initial = expression(mu <- (y+mean(y))/2 ),   
+         sigma.initial =expression(sigma <-  rep((sd(y)),length(y))),
+         mu.valid = function(mu) TRUE, 
+         sigma.valid = function(sigma)  all(sigma > 0),
+         y.valid = function(y)   TRUE
+    ),
+    # the class definition
+    class = c("gamlss.family","family"))
+}
+
+dHS<-function(x, mu = 0, sigma =1, log = FALSE){ 
+  fy1 <- (2 /(sigma * pi)) * exp((x - mu)/sigma) * (1 + exp(2 * (((x - mu)/sigma))))^-1
+  if(log==FALSE) fy<-fy1 else fy<-log(fy1)
+  fy
+}
+#------------------------------------------------------------------------------------------ #ok
+pHS <- function(q, mu = 0, sigma =1, lower.tail = TRUE, log.p = FALSE){    
+  u <- ((exp(2 * (q - mu)/sigma))/(1 + exp(2 * (q - mu)/sigma)))
+  cdf1 <- pbeta(u, 0.5, 0.5, lower.tail=TRUE)
+  if(lower.tail==TRUE) cdf<-cdf1 else cdf<- 1-cdf1
+  if(log.p==FALSE) cdf<- cdf else cdf<- log(cdf)
+  cdf
+}
+#------------------------------------------------------------------------------------------ #ok
+qHS <- function(p, mu = 0, sigma = 1, lower.tail = TRUE, log.p = FALSE){      
+  q1 <- qshsI(p, mu = mu, sigma = sigma, nu = 1, lower.tail = TRUE )
+  if (log.p==TRUE) q <- q1 else q <- log(q1)
+  if (lower.tail==TRUE) q <- q1 else q <- 1-q1
+}
+#------------------------------------------------------------------------------------------ # ok
+rHS <- function(n, mu =0, sigma =1){ 
+  
+  r <- rshsI(n, mu=mu, sigma=sigma, nu=1)
+  r
+}
